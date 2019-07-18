@@ -14,6 +14,13 @@ function useState(initialValue) {
   return [state, setState]
 }
 
+function useRef(initialValue = null) {
+  const ref = Object.seal({ current: initialValue });
+  return useState(ref)[0]
+}
+
+function useEffect(){}
+
 // create DOM elements out of plain js objects
 function renderElement(reaktElement) {
   const {type, props, children} = reaktElement;
@@ -48,8 +55,6 @@ function renderElement(reaktElement) {
       } else {
         domElement.setAttribute(prop, props[prop]);
       }
-
-
     }
 
     return domElement;
@@ -70,7 +75,9 @@ function render(reaktElement = _reaktElement, domElement = _domElement) {
       domElement.replaceChild(app, _currentApp)
       : domElement.appendChild(app);
 
+
   _currentApp = app;
+  idx = 0
 }
 
 // ********************   react - creating tree
@@ -91,22 +98,28 @@ function createElement(type, props, ...children) {
 // ********************   application
 function Title({text}) {
   const [title, setTitle] = useState(text);
+  const [count, setCount] = useState(0);
+
+  const numRef = useRef('0');
+
+  const changeNum = () => {
+    numRef.current = '25';
+  };
 
   return createElement('div', null,
       createElement('h1', {id: 'title'}, title),
+      createElement('h2', null, numRef.current),
+      createElement('button', {onClick: () => setTitle('new title')}, 'click me'),
       createElement(
           'button',
-          {onClick: () => setTitle('new title')},
-          'click me')
+          {onClick: changeNum},
+          `change`
+      ),
   )
-
 }
-
 
 const App = createElement('div', null,
     createElement(Title, {text: 'Hello react'})
 );
 
 render(App, document.getElementById('root'));
-
-window.hooks = hooks;
