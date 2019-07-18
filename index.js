@@ -14,12 +14,27 @@ function useState(initialValue) {
   return [state, setState]
 }
 
+// todo: broken! fix it!
+let _ref = null;
 function useRef(initialValue = null) {
-  const ref = Object.seal({ current: initialValue });
+  const ref = {
+    current: initialValue
+  };
+  Object.seal(ref);
   return useState(ref)[0]
 }
 
-function useEffect(){}
+function useEffect( callBackFn, deps ){
+  const previousDeps = hooks[idx];
+  let hasChanged = true;
+
+  if(previousDeps) {
+    hasChanged = deps.some( (dep, idx) => !Object.is(dep, previousDeps[idx]))
+  }
+
+  if(hasChanged) callBackFn();
+  hooks[idx] = deps;
+}
 
 // create DOM elements out of plain js objects
 function renderElement(reaktElement) {
@@ -96,25 +111,19 @@ function createElement(type, props, ...children) {
 
 
 // ********************   application
-function Title({text}) {
-  const [title, setTitle] = useState(text);
+function Title() {
+  const [title, setTitle] = useState('Default title');
   const [count, setCount] = useState(0);
 
-  const numRef = useRef('0');
+  useEffect(() => {
+    console.log('useEffect callback');
+  });
 
-  const changeNum = () => {
-    numRef.current = '25';
-  };
-
+  console.log('Title Render');
   return createElement('div', null,
       createElement('h1', {id: 'title'}, title),
-      createElement('h2', null, numRef.current),
-      createElement('button', {onClick: () => setTitle('new title')}, 'click me'),
-      createElement(
-          'button',
-          {onClick: changeNum},
-          `change`
-      ),
+      createElement('button', {onClick: () => setCount(count + 1)}, `click me ${count}`),
+      createElement('button', {onClick: () => setTitle('New title')}, `change title`),
   )
 }
 
